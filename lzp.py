@@ -9,10 +9,23 @@ License GNULv3+: GNU GPL Version 3 or later <https://github.com/pard68/lzp/blob/
 This is free software: you are free to change and redistribute it.
 There is NO warranty."""
 
+import re
+
+og_file_name = ""
+
 def get_text(file_name):
+	global og_file_name
+	og_file_name = file_name
 	with open(file_name, 'r') as lyrics:
 		lyrics = lyrics.read()
 		return lyrics
+
+def write_text(string):
+	global og_file_name
+	with open("comp_%s" % og_file_name, 'w') as output_file:
+		output_file.write("%s" % string)
+	
+	
 
 def get_line(string, line_num, count_yes): #passing 1 for Loc_yes will return the x instead of location + 1. Passing 0 for line_num will return the location which is 50% of the lines
 	if line_num == 0:
@@ -33,78 +46,106 @@ def get_line(string, line_num, count_yes): #passing 1 for Loc_yes will return th
 	return location + 1
 
 def get_verse(string, verse_num, count_yes):
-	loc = string.find('\n\n', verse_num)
-	return loc
+	if verse_num == 0:
+		verse_num = string.count('\n\n') + 1
+		if count_yes == 1:
+			return int(verse_num)
+	loc = 0
+	while verse_num > 0:
+		loc = string.find('\n\n', loc + 1)
+		verse_num -= 1
+	return int(loc)
 
 def get_next(string, param, loc): #returns start index of match
 	next_loc = string.find(param, loc)
 	return next_loc
 
 def replace(string, new, loc_start, loc_end):
-	string = string[:loc_start] + new + "\n" + string[loc_end:]
+	string = string[:loc_start] + "\n" + new + "\n" + string[loc_end:]
 	return string
 
 def compress(start, end):
 	compression = '%s+%s' % (start, end)
 	return compression
 
-def verse(lyrics):
-	loc_start = 0
-	loc_end = get_verse(lyrics, 0, 0)
-	
-	#verse = lyrics[loc_start:loc_end]
-	#get_next(lyrics, verse, loc_end)
+def get_mid(total):
+	if total % 2 == 0:
+		total /= 2
+	elif total % 2 != 0:
+		total = (total - 1) / 2
+	return int(total)
 
-	i = 1
-	k = get_verse(lyrics, 0, 1)
-	while i < k:
-		verse = lyrics[loc_start:loc_end]
+def verse(lyrics):
+	verse_start = 1
+	verse_end = get_mid(get_verse(lyrics, 0, 1))
+	
+	loc_start = 0
+	loc_end = get_verse(lyrics, verse_end, 0)
+	
+	p = re.compile('[0-9]+\++[0-9]*')
+
+	"""Searches lyrics for duplicates of 50% of the verses."""
+	total = get_verse(lyrics, 0, 1)
+	j = verse_end
+	while j > 0:
+		loc_start = 0
+		loc_end = get_verse(lyrics, verse_end, 0)
+		print(verse_start, verse_end, j, loc_start, loc_end)
+		i = verse_end
+		while i != total:
+			print(verse_start, verse_end, i, loc_start, loc_end)
+			verses = lyrics[loc_start:loc_end]
+			match = get_next(lyrics, verses, loc_end)
+			if match != -1 and re.search('[0-9+\++[0-9]', str(match)) is None:
+				lyrics  = replace(lyrics, compress(loc_start, loc_end), match, match + len(verses))
+			i += 1
+			verse_start += 1
+			verse_end += 1
+			loc_start = get_verse(lyrics, verse_start, 0)
+			loc_end = get_verse(lyrics, verse_end, 0)
+		j -= 1
+		verse_end = j
+		verse_start = 1
+		print("\n") 
+	return lyrics
+
+
 		
+
+#def lzp(file_name):
+#	lyrics = get_text(file_name)
+#
+#	loc_start = 0
+#	loc_end = get_line(lyrics, 0, 0)
+#	line = lyrics[loc_start:loc_end]
+#
+#	match = get_next(lyrics, line, loc_end)
+#	
+#	#Compare Lines
+#	i = get_line(lyrics, 0, 1)
+#	while i > 0:
+#		line = lyrics[loc_start:loc_end]
+#		j = True
+#		while j == True:
+#			match = get_next(lyrics, line, loc_end)
+#			if match != -1:
+#				lyrics = replace(lyrics, compress(loc_start, loc_end), match, match + len(line))
+#				print(lyrics)
+#				print("\n")
+#				loc_end = match + len(line)
+#			elif match == -1:
+#				print("No match!")
+#				print(line)
+#				print("\n")
+#				j = False
+#		i -= 1
+#		loc_end = get_line(lyrics, i, 0)
 
 def lzp(file_name):
 	lyrics = get_text(file_name)
 
-	loc_start = 0
-	loc_end = get_line(lyrics, 0, 0)
-	line = lyrics[loc_start:loc_end]
-
-	match = get_next(lyrics, line, loc_end)
-	
-	#Compare Lines
-	i = get_line(lyrics, 0, 1)
-	while i > 0:
-		line = lyrics[loc_start:loc_end]
-		j = True
-		while j == True:
-			match = get_next(lyrics, line, loc_end)
-			if match != -1:
-				lyrics = replace(lyrics, compress(loc_start, loc_end), match, match + len(line))
-				print(lyrics)
-				print("\n")
-				loc_end = match + len(line)
-			elif match == -1:
-				print("No match!")
-				print(line)
-				print("\n")
-				j = False
-		i -= 1
-		loc_end = get_line(lyrics, i, 0)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	lyrics = verse(lyrics)
+	write_text(lyrics)
 
 def dev():
 	lzp('lyrics_full.txt')
