@@ -1,0 +1,7 @@
+#Ignore Swaps
+*.swp
+*~
+*.swo
+
+#Ignore project specfic files
+comp_%.txt
