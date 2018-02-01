@@ -27,7 +27,7 @@ def write_text(string):
 	
 	
 
-def get_line(string, line_num, count_yes): #passing 1 for Loc_yes will return the x instead of location + 1. Passing 0 for line_num will return the location which is 50% of the lines
+def get_line(string, line_num, count_yes): #passing 1 for count_yes will return the x instead of location + 1. Passing 0 for line_num will return the location which is 50% of the lines
 	if line_num == 0:
 		x = string.count('\n')
 		if x % 2 == 0:
@@ -36,7 +36,7 @@ def get_line(string, line_num, count_yes): #passing 1 for Loc_yes will return th
 			x = int((x - 1) / 2)
 		if count_yes == 1:
 			return x
-	else: 
+	else:
 		x = line_num
 
 	location = 0
@@ -76,7 +76,7 @@ def get_mid(total):
 	return int(total)
 
 def verse(lyrics):
-	verse_start = 1
+	verse_start = 0
 	verse_end = get_mid(get_verse(lyrics, 0, 1))
 	
 	loc_start = 0
@@ -85,27 +85,31 @@ def verse(lyrics):
 	p = re.compile('[0-9]+\++[0-9]*')
 
 	"""Searches lyrics for duplicates of 50% of the verses."""
-	total = get_verse(lyrics, 0, 1)
+	#total = get_verse(lyrics, 0, 1)
 	j = verse_end
 	while j > 0:
 		loc_start = 0
 		loc_end = get_verse(lyrics, verse_end, 0)
 		print(verse_start, verse_end, j, loc_start, loc_end)
-		i = verse_end
-		while i != total:
-			print(verse_start, verse_end, i, loc_start, loc_end)
+		total = get_verse(lyrics, 0, 1)
+		while verse_end != total:
+			print(verse_start, verse_end, loc_start, loc_end)
 			verses = lyrics[loc_start:loc_end]
 			match = get_next(lyrics, verses, loc_end)
-			if match != -1 and re.search('[0-9+\++[0-9]', str(match)) is None:
+			if match != -1 and re.search('[0-9+\++[0-9]', verses) is None and verses != '\n\n':
 				lyrics  = replace(lyrics, compress(loc_start, loc_end), match, match + len(verses))
-			i += 1
+				print(match)
+				print(verses)
+			#i += 1
 			verse_start += 1
 			verse_end += 1
-			loc_start = get_verse(lyrics, verse_start, 0)
+
+			loc_start = get_verse(lyrics, verse_start, 0) + 2
 			loc_end = get_verse(lyrics, verse_end, 0)
+                        
 		j -= 1
 		verse_end = j
-		verse_start = 1
+		verse_start = 0
 		print("\n") 
 	return lyrics
 
