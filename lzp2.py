@@ -1,4 +1,5 @@
 """lvp - A loose implementation of Lempel-Ziv compression, for use in determining song complexity/repetition.
+VERSION 0.1.0
 
 This program is based off of a blog post by Colin Morris titled "Are Pop Lyrics Getting More Repetitive?" <https://pudding.cool/2017/05/song-repetition/>. In the blog post Mr. Morris used his own version of the LZ algorithm to determine how repetitive a song is. I have taken my own interpretation of this idea and implemented it in this program.
 
@@ -8,6 +9,64 @@ Copyright (C) 2018, Ian S. Pringle
 License GNULv3+: GNU GPL Version 3 or later <https://github.com/pard68/lzp/blob/master/LICENSE>
 This is free software: you are free to change and redistribute it.
 There is NO warranty."""
+
+'''
+--------------------------
+New Code
+--------------------------
+'''
+import re
+import string
+
+original_file_name = ""
+
+def read_from_file(file_name):
+	global original_file_name
+	original_file_name = file_name
+	with open(file_name, 'r') as string:
+		string = string.read()
+		return string
+
+def write_to_file(string):
+	global original_file_name
+	with open("comp_%s" % original_file_name, 'w') as output_file:
+		output_file.write("%s" % string)
+
+def format_lyrics(string):
+	return string.translate(table, string.punctuation)
+
+def compare_strings(a, b):
+	return a == b
+
+def string_to_array(string):
+	lyrics = []
+	verse = []
+	line_start = 0
+	line_end = 0
+	while line_end < len(string):
+		line_end = string.find("\n", line_end)
+		if string[line_end + 1] != "\n":
+			verse.append(string[line_start:line_end])
+			line_end += 1
+			line_start = line_end
+		elif string[line_end + 1] == "\n":
+			verse.append(string[line_start:line_end])
+			line_end += 2
+			line_start = line_end
+			lyrics.append(verse)
+			verse = []
+	return lyrics
+
+string = read_from_file('lyrics_full.txt')
+#string = format_lyrics(string)
+lyrics = string_to_array(string)
+print(lyrics)
+
+
+'''
+--------------------------
+Old Code
+--------------------------
 
 import re
 
@@ -179,3 +238,5 @@ def dev():
 	lzp('lyrics_full.txt')
 
 dev()
+
+'''
