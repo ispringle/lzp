@@ -57,11 +57,37 @@ def string_to_array(string):
 			verse = []
 	return lyrics
 
+def compare_line(lyrics):
+	i = 0
+	same = {}
+	while i < len(lyrics):
+		j = 0
+		while j < len(lyrics[i]):
+			k = 0
+			while k < len(lyrics):
+				l = 0
+				while l < len(lyrics[k]):
+					if i == k:
+						break
+					else:
+						if lyrics[i][j] == lyrics[k][l]:
+							#print("Verse", i+1, "line", j+1, "equals verse", k+1, "line", l+1)
+							match = '[' + str(k) + '][' + str(l) + ']'
+							if match in same:
+								break
+							else:
+								coord = '[' + str(i) + '][' + str(j) + ']'
+								same[coord] = match
+					l += 1
+				k += 1
+			j += 1
+		i += 1
+	return same
+
 string = read_from_file('lyrics_full.txt')
 #string = format_lyrics(string)
 lyrics = string_to_array(string)
-print(lyrics)
-
+print(len(compare_line(lyrics)))
 
 '''
 --------------------------

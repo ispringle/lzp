@@ -139,7 +139,7 @@ def line(lyrics):
 			loc_start = 1 
 		loc_end = get_line(lyrics, line_start, line_end)
 		total = line_total(lyrics, verse_end)
-	
+		ltotal =0
 		while verse_end > 0: 
 			while line_end <= total: 
 				print(ltotal, line_end)
