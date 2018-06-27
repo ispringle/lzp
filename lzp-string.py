@@ -32,68 +32,49 @@ def write_to_file(string):
 	with open("comp_%s" % original_file_name, 'w') as output_file:
 		output_file.write("%s" % string)
 
-def compare_strings(a, b):
+def compare(a, b):
 	return a == b
 
-def string_to_array(string):
+def parse_(string):			#Creates an array of locations in string. Line starts and ends, and verses
 	lyrics = []
-	verse = []
-	line_start = 0
-	line_end = 0
-	while line_end < len(string):
-		line_end = string.find("\n", line_end)
-		if string[line_end + 1] != "\n":
-			verse.append(string[line_start:line_end])
-			line_end += 1
-			line_start = line_end
-		elif string[line_end + 1] == "\n":
-			verse.append(string[line_start:line_end])
-			line_end += 2
-			line_start = line_end
-			lyrics.append(verse)
-			verse = []
+	line = []
+	lineStart = 0
+	loc = 0
+	
+	for char in string:
+		prevChar = string[loc-1]
+		if char is "\n" and prevChar is "\n":
+			pass
+		else:
+			nextChar = string[loc+1]
+			if char is "\n" and nextChar is not "\n":
+				lineEnd = loc
+				line.append([lineStart, lineEnd])
+				lineStart = lineEnd + 1
+			elif char is "\n" and nextChar is "\n":
+				lineEnd = loc
+				line.append([lineStart, lineEnd])
+				lineStart = lineEnd + 2
+				lyrics.append(line)
+				line =[]
+		loc += 1
 	return lyrics
 
-def compare_line(lyrics):
-	i = 0
-	same = {}
-	while i < len(lyrics):
-		j = 0
-		while j < len(lyrics[i]):
-			k = 0
-			while k < len(lyrics):
-				l = 0
-				while l < len(lyrics[k]):
-					if i == k:
-						break
-					else:
-						if lyrics[i][j] == lyrics[k][l]:
-							#print("Verse", i+1, "line", j+1, "equals verse", k+1, "line", l+1)
-							match = '[' + str(k) + '][' + str(l) + ']'
-							if match in same:
-								break
-							else:
-								coord = '[' + str(i) + '][' + str(j) + ']'
-								same[coord] = match
-					l += 1
-				k += 1
-			j += 1
-		i += 1
-	return same
+def compare_verses(string, array, numberOfVerses):
+	start = 0
+	end = array[numberOfVerses][-1][-1]
+	target = string[start:end]
+
+	print(string.find(target, end))
+
+def compare_half(string, array):
+	middleVerse = int(len(array) / 2 - len(array) / 2 % 2) - 1
+	compare_verses(string, array, middleVerse)
 
 string = read_from_file('lyrics_full.txt')
-#string = format_lyrics(string)
-lyrics = string_to_array(string)
-duplicate_verses = len(compare_line(lyrics))
-total_verses = 0
-i = 0
-while i < len(lyrics):
-	j = 0
-	while j < len(lyrics[i]):
-		total_verses += 1
-		j += 1
-	i += 1
-print(duplicate_verses / total_verses * 100, "percent of the lines are duplicate")
+#compare_verses(string)
+arrayLyrics = parse_(string)
+compare_half(string, arrayLyrics)
 
 '''
 --------------------------
