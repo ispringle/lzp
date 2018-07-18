@@ -1,7 +1,10 @@
 """lvp - A loose implementation of Lempel-Ziv compression, for use in determining song complexity/repetition.
 VERSION 0.1.0
 
-This program is based off of a blog post by Colin Morris titled "Are Pop Lyrics Getting More Repetitive?" <https://pudding.cool/2017/05/song-repetition/>. In the blog post Mr. Morris used his own version of the LZ algorithm to determine how repetitive a song is. I have taken my own interpretation of this idea and implemented it in this program.
+This program is based off of a blog post by Colin Morris titled "Are Pop Lyrics Getting More Repetitive?" 
+<https://pudding.cool/2017/05/song-repetition/>. 
+In the blog post Mr. Morris used his own version of the LZ algorithm to determine how repetitive a song is. 
+I have taken my own interpretation of this idea and implemented it in this program.
 
 This program was requested by, and created for, Cliff Stumme aka "The Pop Song Professor". 
 
@@ -93,12 +96,34 @@ def compare_verses(string, array, numberOfVerses):
 def get_half(string, array):
 	return int(len(array) / 2 - len(array) / 2 % 2) - 1
 
-def compare_lines(string, array):
-	#for verse in array:
-	#	startLine = 0
-	#	endLine = len(verse)-1
-	#	while endLine < len(verse):
-	#	
+def compare_lines(string, array, numberOfLines, verseNumber):
+	while numberOfLines >= 0:
+		startLine = 0
+		if numberOfLines - 1 < 0:
+			endLine = numberOfLines
+		else:
+			endLine = numberOfLines - 1
+		while endLine < len(array[verseNumber]):
+			start = line_start(array, verseNumber, startLine)
+			end = line_end(array, verseNumber, endLine)
+			target = string[start:end]
+			comparison = string.find(target, end)
+			while comparison != -1:
+				string = replace(string, compress(start, end), comparison, comparison + (end - start))
+				array = parse_(string)
+				comparison = string.find(target, comparison + 1)
+			startLine += 1
+			endLine += 1
+		return compare_lines(string, array, numberOfLines - 1, verseNumber)
+	return string, array
+
+def line_start(array, verseNumber, startLine):
+	return array[verseNumber][startLine][0]
+
+def line_end(array, verseNumber, endLine):
+	return array[verseNumber][endLine][-1]
+
+def compare_words(string, array):
 	return string, array
 
 def compress(start, end):
@@ -110,9 +135,16 @@ def replace(string, new, loc_start, loc_end):
 	return string
 
 stringLyrics = read_from_file('lyrics_full.txt')
-#compare_verses(string)
+
 arrayLyrics = parse_(stringLyrics)
 stringLyrics, arrayLyrics = compare_verses(stringLyrics, arrayLyrics, get_half(stringLyrics, arrayLyrics))
-stringLyrics, arrayLyrics =  compare_lines(stringLyrics, arrayLyrics)
+
+verseNumber = 0
+for verse in arrayLyrics:
+	stringLyrics, arrayLyrics = compare_lines(stringLyrics, arrayLyrics, len(verse), verseNumber)
+	verseNumber += 1
+
+compare_words(stringLyrics, arrayLyrics)
+
 print(stringLyrics)
 
