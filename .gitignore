@@ -5,3 +5,5 @@
 
 #Ignore project specfic files
 comp_%.txt
+lyrics.txt
+lyrics_full.txt

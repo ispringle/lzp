@@ -124,7 +124,29 @@ def line_end(array, verseNumber, endLine):
 	return array[verseNumber][endLine][-1]
 
 def compare_words(string, array):
+	verseNum = 0
+	lineNum = 0
+	
+	for verse in array:
+		for line in verse:
+			words = parse_words(string, array, verseNum, lineNum)
+			
 	return string, array
+
+def parse_words(string, array, verse, line):
+	words = []
+	lineStart = array[verse][line][0]
+	lineEnd = array[verse][line][-1]
+	wordStart = lineStart
+	loc = 0
+	
+	for char in string[lineStart:lineEnd]:
+		if char is " ":
+			wordEnd = loc
+			words.append([wordStart, wordEnd])
+			wordStart = wordEnd + 1
+		loc += 1
+	return words
 
 def compress(start, end):
 	compression = '{%s:%s}' % (start, end)
